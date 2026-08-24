@@ -1,17 +1,22 @@
-import { UserStatus, type UserRole } from "../../generated/prisma/enums";
+import { UserStatus, type UserRole } from "../models/enums.model";
 import { AppError, HTTP_STATUS } from "../errors";
 import { authRepository } from "../repositories/auth.repository";
 import type { LoginBody } from "../models/auth.model";
-
-type JwtSigner = {
-    sign: (payload: Record<string, string>) => Promise<string>;
-};
 
 export type AuthUserResponse = {
     id: string;
     fullName: string;
     email: string;
     role: UserRole;
+};
+
+export type AuthTokenPayload = {
+    sub: string;
+    role: UserRole;
+};
+
+type JwtSigner = {
+    sign: (payload: AuthTokenPayload) => Promise<string>;
 };
 
 export const authService = {

@@ -1,7 +1,11 @@
-import { Elysia, t } from "elysia";
+import { Elysia } from "elysia";
 import { jwtMiddleware } from "../middleware/jwt.middleware";
 import { authController } from "../controllers/auth.controller";
-import { loginBodySchema, loginResponseSchema } from "../models/auth.model";
+import {
+    authErrorResponseSchema,
+    loginBodySchema,
+    loginResponseSchema
+} from "../models/auth.model";
 
 export const authRoutes = new Elysia({
     prefix: "/auth"
@@ -14,26 +18,15 @@ export const authRoutes = new Elysia({
             body: loginBodySchema,
             response: {
                 200: loginResponseSchema,
-                401: t.Object({
-                    success: t.Boolean(),
-                    message: t.String(),
-                    errors: t.Nullable(t.Unknown())
-                }),
-                403: t.Object({
-                    success: t.Boolean(),
-                    message: t.String(),
-                    errors: t.Nullable(t.Unknown())
-                }),
-                422: t.Object({
-                    success: t.Boolean(),
-                    message: t.String(),
-                    errors: t.Nullable(t.Unknown())
-                })
+                401: authErrorResponseSchema,
+                403: authErrorResponseSchema,
+                422: authErrorResponseSchema
             },
             detail: {
                 tags: ["Auth"],
                 summary: "Login",
-                description: "Authenticate a user with email and password, then return user data and JWT access token."
+                description: "Authenticate an active user with email and password, then return safe user data and a JWT access token.",
+                security: []
             }
         }
     );

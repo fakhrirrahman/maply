@@ -1,4 +1,5 @@
 import { t } from "elysia";
+import { UserRole } from "./enums.model";
 
 export const loginBodySchema = t.Object({
     email: t.String({
@@ -19,10 +20,16 @@ export const loginResponseSchema = t.Object({
             id: t.String(),
             fullName: t.String(),
             email: t.String(),
-            role: t.String()
+            role: t.Enum(UserRole)
         }),
         accessToken: t.String()
     })
+});
+
+export const authErrorResponseSchema = t.Object({
+    success: t.Boolean(),
+    message: t.String(),
+    errors: t.Nullable(t.Unknown())
 });
 
 export type LoginBody = typeof loginBodySchema.static;

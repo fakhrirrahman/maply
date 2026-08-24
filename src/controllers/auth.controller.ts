@@ -1,10 +1,11 @@
 import type { LoginBody } from "../models/auth.model";
+import type { AuthTokenPayload } from "../services/auth.service";
 import { authService } from "../services/auth.service";
 import { Response } from "../utils/response";
 
 type JwtContext = {
     jwt: {
-        sign: (payload: Record<string, string>) => Promise<string>;
+        sign: (payload: AuthTokenPayload) => Promise<string>;
     };
 };
 

@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "bun --watch src/server.ts",
     "build": "bun build src/server.ts --outdir dist --target bun",
-    "start": "bun dist/server.js"
+    "start": "bun dist/server.js",
+    "seed": "bun prisma/seed.ts"
   },
   "dependencies": {
     "@elysia/cors": "^1.4.2",
