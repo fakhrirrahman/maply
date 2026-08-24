@@ -3,29 +3,34 @@ import { paymentController } from "../controllers/payment.controller";
 import { errorResponseSchema, idParamsSchema, paginatedResponseSchema, paginationQuerySchema, successResponseSchema } from "../models/common.model";
 import { createPaymentSchema, updatePaymentSchema } from "../models/payment.model";
 import { jwtMiddleware } from "../middleware/jwt.middleware";
+import { ADMIN_ROLES } from "../models/enums.model";
 
 export const paymentRoutes = new Elysia({ prefix: "/payments" })
     .use(jwtMiddleware)
     .get("/", paymentController.list, {
         auth: true,
+        roles: [...ADMIN_ROLES],
         query: paginationQuerySchema,
         response: { 200: paginatedResponseSchema, 401: errorResponseSchema },
         detail: { tags: ["Payments"], summary: "List payments", security: [{ bearerAuth: [] }] }
     })
     .get("/:id", paymentController.detail, {
         auth: true,
+        roles: [...ADMIN_ROLES],
         params: idParamsSchema,
         response: { 200: successResponseSchema, 401: errorResponseSchema, 404: errorResponseSchema },
         detail: { tags: ["Payments"], summary: "Get payment detail", security: [{ bearerAuth: [] }] }
     })
     .post("/", paymentController.create, {
         auth: true,
+        roles: [...ADMIN_ROLES],
         body: createPaymentSchema,
         response: { 200: successResponseSchema, 401: errorResponseSchema, 422: errorResponseSchema },
         detail: { tags: ["Payments"], summary: "Create payment", security: [{ bearerAuth: [] }] }
     })
     .patch("/:id", paymentController.update, {
         auth: true,
+        roles: [...ADMIN_ROLES],
         params: idParamsSchema,
         body: updatePaymentSchema,
         response: { 200: successResponseSchema, 401: errorResponseSchema, 404: errorResponseSchema, 422: errorResponseSchema },
@@ -33,6 +38,7 @@ export const paymentRoutes = new Elysia({ prefix: "/payments" })
     })
     .delete("/:id", paymentController.delete, {
         auth: true,
+        roles: [...ADMIN_ROLES],
         params: idParamsSchema,
         response: { 200: successResponseSchema, 401: errorResponseSchema, 404: errorResponseSchema },
         detail: { tags: ["Payments"], summary: "Delete payment", security: [{ bearerAuth: [] }] }

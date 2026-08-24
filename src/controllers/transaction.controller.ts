@@ -1,5 +1,5 @@
 import type { IdParams, PaginationQuery } from "../models/common.model";
-import type { CreateTransactionBody, UpdateTransactionBody } from "../models/transaction.model";
+import type { CreateTransactionBody, MidtransChargeBody, UpdateTransactionBody } from "../models/transaction.model";
 import { transactionService } from "../services/transaction.service";
 import { Response } from "../utils/response";
 
@@ -19,5 +19,11 @@ export const transactionController = {
     },
     async delete({ params }: { params: IdParams }) {
         return Response.success(await transactionService.delete(params.id), "Transaction deleted successfully");
+    },
+    async chargeWithMidtrans({ params, body }: { params: IdParams; body: MidtransChargeBody }) {
+        return Response.success(
+            await transactionService.chargeWithMidtrans(params.id, body),
+            "Midtrans charge created successfully"
+        );
     }
 };

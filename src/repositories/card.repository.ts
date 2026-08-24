@@ -31,6 +31,29 @@ export const cardRepository = {
         });
     },
 
+    findByQrToken(qrToken: string) {
+        return prisma.card.findUnique({
+            where: { qrToken },
+            include: cardInclude
+        });
+    },
+
+    findManyByAgent(agentId: bigint, skip: number, take: number) {
+        return prisma.card.findMany({
+            where: { agentId },
+            skip,
+            take,
+            orderBy: { createdAt: "desc" },
+            include: cardInclude
+        });
+    },
+
+    countByAgent(agentId: bigint) {
+        return prisma.card.count({
+            where: { agentId }
+        });
+    },
+
     create(data: Prisma.CardUncheckedCreateInput) {
         return prisma.card.create({ data, include: cardInclude });
     },

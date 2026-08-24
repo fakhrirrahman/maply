@@ -27,6 +27,13 @@ export const paymentRepository = {
         });
     },
 
+    findByProviderTransactionId(providerTransactionId: string) {
+        return prisma.payment.findFirst({
+            where: { providerTransactionId },
+            include: paymentInclude
+        });
+    },
+
     create(data: Prisma.PaymentUncheckedCreateInput) {
         return prisma.payment.create({ data, include: paymentInclude });
     },

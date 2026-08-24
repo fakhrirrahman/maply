@@ -4,7 +4,7 @@ import type { Prisma } from "../../generated/prisma/client";
 const transactionInclude = {
     card: true,
     user: {
-        select: { id: true, fullName: true, email: true, role: true, status: true }
+        select: { id: true, fullName: true, email: true, phone: true, role: true, status: true }
     },
     price: true
 } satisfies Prisma.TransactionInclude;
@@ -26,6 +26,13 @@ export const transactionRepository = {
     findById(id: bigint) {
         return prisma.transaction.findUnique({
             where: { id },
+            include: transactionInclude
+        });
+    },
+
+    findByTransactionNumber(transactionNumber: string) {
+        return prisma.transaction.findUnique({
+            where: { transactionNumber },
             include: transactionInclude
         });
     },

@@ -1,6 +1,12 @@
 import { Elysia } from "elysia";
 import { jwtPlugin } from "../lib/jwt";
+import { UserRole, type UserRole as UserRoleType } from "../models/enums.model";
 import { Response } from "../utils/response";
+
+export type AuthUser = {
+    sub: string;
+    role: UserRoleType;
+};
 
 export const jwtMiddleware = new Elysia({
     name: "jwt.middleware"
@@ -27,9 +33,37 @@ export const jwtMiddleware = new Elysia({
                 });
             }
 
+            const role = payload.role;
+
+            if (
+                typeof payload.sub !== "string"
+                || typeof role !== "string"
+                || !Object.values(UserRole).includes(role as UserRoleType)
+            ) {
+                return status(401, {
+                    ...Response.error("Invalid token payload")
+                });
+            }
+
             return {
-                user: payload
+                user: {
+                    sub: payload.sub,
+                    role: role as UserRoleType
+                }
             };
         }
+    },
+    roles(allowedRoles: UserRoleType[]) {
+        return {
+            beforeHandle({ user, status }: { user?: AuthUser; status: (code: number, body: unknown) => unknown }) {
+                if (!user) {
+                    return status(401, Response.error("Unauthorized"));
+                }
+
+                if (!allowedRoles.includes(user.role)) {
+                    return status(403, Response.error("Forbidden"));
+                }
+            }
+        };
     }
 });

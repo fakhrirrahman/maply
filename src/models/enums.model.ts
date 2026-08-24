@@ -74,7 +74,20 @@ export const PaymentStatus = {
     REFUNDED: "REFUNDED"
 } as const;
 
+export type PaymentStatus = typeof PaymentStatus[keyof typeof PaymentStatus];
+
 export const AssignmentStatus = {
     ACTIVE: "ACTIVE",
     INACTIVE: "INACTIVE"
 } as const;
+
+export const ADMIN_ROLES = [
+    UserRole.SUPER_ADMIN,
+    UserRole.ADMIN
+] as const;
+
+export const STAFF_ROLES = [
+    UserRole.SUPER_ADMIN,
+    UserRole.ADMIN,
+    UserRole.AGENT
+] as const;

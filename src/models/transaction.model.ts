@@ -19,5 +19,29 @@ export const createTransactionSchema = t.Object({
 
 export const updateTransactionSchema = t.Partial(createTransactionSchema);
 
+export const midtransChargeSchema = t.Object({
+    paymentMethodId: t.String({ pattern: "^\\d+$" }),
+    paymentType: t.Optional(t.Union([
+        t.Literal("bank_transfer"),
+        t.Literal("echannel"),
+        t.Literal("qris")
+    ])),
+    bank: t.Optional(t.Union([
+        t.Literal("bca"),
+        t.Literal("bni"),
+        t.Literal("bri"),
+        t.Literal("permata"),
+        t.Literal("cimb"),
+        t.Literal("mandiri"),
+        t.Literal("qris")
+    ])),
+    acquirer: t.Optional(t.Union([
+        t.Literal("gopay"),
+        t.Literal("airpay shopee")
+    ])),
+    vaNumber: t.Optional(t.String({ pattern: "^\\d+$" }))
+});
+
 export type CreateTransactionBody = typeof createTransactionSchema.static;
 export type UpdateTransactionBody = typeof updateTransactionSchema.static;
+export type MidtransChargeBody = typeof midtransChargeSchema.static;

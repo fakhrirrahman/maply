@@ -29,6 +29,40 @@ export const userMapRepository = {
         });
     },
 
+    findManyByUser(userId: bigint, skip: number, take: number) {
+        return prisma.userMap.findMany({
+            where: { userId },
+            skip,
+            take,
+            orderBy: { createdAt: "desc" },
+            include: userMapInclude
+        });
+    },
+
+    countByUser(userId: bigint) {
+        return prisma.userMap.count({
+            where: { userId }
+        });
+    },
+
+    findByIdAndUser(id: bigint, userId: bigint) {
+        return prisma.userMap.findFirst({
+            where: { id, userId },
+            include: userMapInclude
+        });
+    },
+
+    findActiveByUser(userId: bigint) {
+        return prisma.userMap.findFirst({
+            where: {
+                userId,
+                status: "ACTIVE"
+            },
+            orderBy: { createdAt: "asc" },
+            include: userMapInclude
+        });
+    },
+
     create(data: Prisma.UserMapUncheckedCreateInput) {
         return prisma.userMap.create({ data, include: userMapInclude });
     },
