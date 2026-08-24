@@ -1,0 +1,8 @@
+node_modules
+dist
+out
+coverage
+generated
+bun.lock
+.env
+.env.*

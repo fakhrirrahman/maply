@@ -3,19 +3,29 @@ import { t } from "elysia";
 export const idParamsSchema = t.Object({
     id: t.String({
         pattern: "^\\d+$",
-        description: "Numeric resource id"
+        description: "Numeric resource id",
+        examples: {
+            default: {
+                summary: "Existing resource id",
+                value: "1"
+            }
+        }
     })
 });
 
 export const paginationQuerySchema = t.Object({
-    page: t.Optional(t.String({
-        pattern: "^\\d+$",
-        examples: ["1"]
-    })),
-    limit: t.Optional(t.String({
-        pattern: "^\\d+$",
-        examples: ["10"]
-    }))
+    page: t.Optional(
+        t.String({
+            pattern: "^\\d+$",
+            examples: ["1"]
+        })
+    ),
+    limit: t.Optional(
+        t.String({
+            pattern: "^\\d+$",
+            examples: ["10"]
+        })
+    )
 });
 
 export const successResponseSchema = t.Object({
