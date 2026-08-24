@@ -5,7 +5,11 @@ export type PaginationQuery = {
     limit?: string;
 };
 
-export function parseId(id: string, field: string = "id") {
+export function parseId(id: string | undefined, field: string = "id") {
+    if (!id) {
+        throw new AppError(`${field} is required`, HTTP_STATUS.BAD_REQUEST);
+    }
+
     if (!/^\d+$/.test(id)) {
         throw new AppError(`Invalid ${field}`, HTTP_STATUS.BAD_REQUEST);
     }

@@ -54,6 +54,38 @@ export const cardRepository = {
         });
     },
 
+    findManyByOwner(ownerId: bigint, skip: number, take: number) {
+        return prisma.card.findMany({
+            where: { ownerId },
+            skip,
+            take,
+            orderBy: { createdAt: "desc" },
+            include: cardInclude
+        });
+    },
+
+    countByOwner(ownerId: bigint) {
+        return prisma.card.count({
+            where: { ownerId }
+        });
+    },
+
+    findByIdAndOwner(id: bigint, ownerId: bigint) {
+        return prisma.card.findFirst({
+            where: { id, ownerId },
+            include: cardInclude
+        });
+    },
+
+    countActiveByOwner(ownerId: bigint) {
+        return prisma.card.count({
+            where: {
+                ownerId,
+                status: "ACTIVE"
+            }
+        });
+    },
+
     create(data: Prisma.CardUncheckedCreateInput) {
         return prisma.card.create({ data, include: cardInclude });
     },

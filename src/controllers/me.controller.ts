@@ -1,12 +1,28 @@
 import type { AuthUser } from "../middleware/jwt.middleware";
 import type { IdParams, PaginationQuery } from "../models/common.model";
+import type { MidtransChargeBody } from "../models/transaction.model";
 import type { CreateUserMapBody, UpdateUserMapBody } from "../models/user-map.model";
 import { meService } from "../services/me.service";
 import { Response } from "../utils/response";
 
 type CreateMyMapBody = Omit<CreateUserMapBody, "userId">;
+type CheckoutMyCardBody = MidtransChargeBody & {
+    priceId: string;
+};
 
 export const meController = {
+    async listCards({ user, query }: { user: AuthUser; query: PaginationQuery }) {
+        const result = await meService.listCards(user, query);
+        return Response.paginated(result.data as unknown[], result.page, result.limit, result.total);
+    },
+
+    async checkoutCard({ user, params, body }: { user: AuthUser; params: IdParams; body: CheckoutMyCardBody }) {
+        return Response.success(
+            await meService.checkoutCard(user, params.id, body),
+            "Checkout created successfully"
+        );
+    },
+
     async listMaps({ user, query }: { user: AuthUser; query: PaginationQuery }) {
         const result = await meService.listMaps(user, query);
         return Response.paginated(result.data as unknown[], result.page, result.limit, result.total);

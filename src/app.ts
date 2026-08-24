@@ -2,6 +2,7 @@ import { Elysia } from "elysia";
 import { corsConfig } from "./config/cors";
 import { swaggerConfig } from "./config/swagger";
 import { errorHandler } from "./errors";
+import { loggerMiddleware } from "./middleware/logger.middleware";
 import { agentRoutes } from "./routes/agent.route";
 import { agentProfileRoutes } from "./routes/agent-profile.route";
 import { authRoutes } from "./routes/auth.route";
@@ -21,6 +22,7 @@ import { webhookRoutes } from "./routes/webhook.route";
 export const app = new Elysia({
     prefix: "/api"
 })
+    .use(loggerMiddleware)
     .use(corsConfig)
     .use(swaggerConfig)
     .use(errorHandler)

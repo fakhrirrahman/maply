@@ -3,7 +3,7 @@ import { t } from "elysia";
 export const idParamsSchema = t.Object({
     id: t.String({
         pattern: "^\\d+$",
-        examples: ["1"]
+        description: "Numeric resource id"
     })
 });
 

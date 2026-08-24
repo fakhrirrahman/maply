@@ -1,28 +1,35 @@
 import "dotenv/config";
 import { prisma } from "../src/lib/prisma";
-import { UserRole, UserStatus } from "../src/models/enums.model";
+import { UserRole, UserStatus, type UserRole as UserRoleType } from "../src/models/enums.model";
 
+const superAdminEmail = "superadmin@maply.com";
+const superAdminPassword = "password";
 const adminEmail = "admin@maply.com";
 const adminPassword = "password";
 
-async function main() {
-    const passwordHash = await Bun.password.hash(adminPassword);
+async function upsertSeedUser(input: {
+    fullName: string;
+    email: string;
+    password: string;
+    role: UserRoleType;
+}) {
+    const passwordHash = await Bun.password.hash(input.password);
 
-    const admin = await prisma.user.upsert({
+    return prisma.user.upsert({
         where: {
-            email: adminEmail
+            email: input.email
         },
         update: {
-            fullName: "Maply Admin",
+            fullName: input.fullName,
             passwordHash,
-            role: UserRole.ADMIN,
+            role: input.role,
             status: UserStatus.ACTIVE
         },
         create: {
-            fullName: "Maply Admin",
-            email: adminEmail,
+            fullName: input.fullName,
+            email: input.email,
             passwordHash,
-            role: UserRole.ADMIN,
+            role: input.role,
             status: UserStatus.ACTIVE,
             registeredAt: new Date()
         },
@@ -34,13 +41,35 @@ async function main() {
             status: true
         }
     });
+}
+
+async function main() {
+    const superAdmin = await upsertSeedUser({
+        fullName: "Maply Super Admin",
+        email: superAdminEmail,
+        password: superAdminPassword,
+        role: UserRole.SUPER_ADMIN
+    });
+
+    const admin = await upsertSeedUser({
+        fullName: "Maply Admin",
+        email: adminEmail,
+        password: adminPassword,
+        role: UserRole.ADMIN
+    });
 
     console.log({
         message: "Seed completed",
-        user: {
-            ...admin,
-            id: admin.id.toString()
-        }
+        users: [
+            {
+                ...superAdmin,
+                id: superAdmin.id.toString()
+            },
+            {
+                ...admin,
+                id: admin.id.toString()
+            }
+        ]
     });
 }
 

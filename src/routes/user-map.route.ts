@@ -15,7 +15,7 @@ export const userMapRoutes = new Elysia({ prefix: "/user-maps" })
     .get("/:id", userMapController.detail, {
         auth: true,
         params: idParamsSchema,
-        response: { 200: successResponseSchema, 401: errorResponseSchema, 404: errorResponseSchema },
+        response: { 200: successResponseSchema, 400: errorResponseSchema, 401: errorResponseSchema, 404: errorResponseSchema, 422: errorResponseSchema },
         detail: { tags: ["User Maps"], summary: "Get user map detail", security: [{ bearerAuth: [] }] }
     })
     .post("/", userMapController.create, {
@@ -28,12 +28,12 @@ export const userMapRoutes = new Elysia({ prefix: "/user-maps" })
         auth: true,
         params: idParamsSchema,
         body: updateUserMapSchema,
-        response: { 200: successResponseSchema, 401: errorResponseSchema, 404: errorResponseSchema, 422: errorResponseSchema },
+        response: { 200: successResponseSchema, 400: errorResponseSchema, 401: errorResponseSchema, 404: errorResponseSchema, 422: errorResponseSchema },
         detail: { tags: ["User Maps"], summary: "Update user map", security: [{ bearerAuth: [] }] }
     })
     .delete("/:id", userMapController.delete, {
         auth: true,
         params: idParamsSchema,
-        response: { 200: successResponseSchema, 401: errorResponseSchema, 404: errorResponseSchema },
+        response: { 200: successResponseSchema, 400: errorResponseSchema, 401: errorResponseSchema, 404: errorResponseSchema, 422: errorResponseSchema },
         detail: { tags: ["User Maps"], summary: "Delete user map", security: [{ bearerAuth: [] }] }
     });
