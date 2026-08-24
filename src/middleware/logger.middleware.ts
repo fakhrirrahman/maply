@@ -16,4 +16,5 @@ export const loggerMiddleware = new Elysia({
             statusCode: set.status ?? 200,
             durationMs: Math.round(performance.now() - requestStartTime)
         }, "request completed");
-    });
+    })
+    .as("global");
