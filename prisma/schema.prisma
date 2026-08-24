@@ -6,3 +6,365 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  AGENT
+  USER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum CardStatus {
+  AVAILABLE
+  ASSIGNED
+  REGISTERED
+  PAYMENT_PENDING
+  ACTIVE
+  SUSPENDED
+  EXPIRED
+  CANCELLED
+}
+
+enum MapStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum LocationStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum PriceStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum TaxType {
+  FIXED
+  PERCENTAGE
+}
+
+enum FeeType {
+  FIXED
+  PERCENTAGE
+}
+
+enum PaymentMethodStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum TransactionStatus {
+  PENDING
+  PROCESSING
+  PAID
+  FAILED
+  EXPIRED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  PAID
+  FAILED
+  EXPIRED
+  CANCELLED
+  REFUNDED
+}
+
+enum AssignmentStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model User {
+  id BigInt @id @default(autoincrement())
+
+  fullName     String  @map("full_name")
+  email        String  @unique
+  phone        String?
+  passwordHash String  @map("password_hash")
+
+  role   UserRole   @default(USER)
+  status UserStatus @default(ACTIVE)
+
+  country String?
+  address String?
+
+  registeredAt DateTime? @map("registered_at")
+  lastLoginAt  DateTime? @map("last_login_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  agentProfile AgentProfile?
+
+  distributedCards Card[] @relation("AgentCards")
+  ownedCards       Card[] @relation("OwnerCards")
+
+  maps         UserMap[]
+  transactions Transaction[]
+
+  cardAssignmentsCreated  CardAssignment[] @relation("AssignedByUser")
+  cardAssignmentsReceived CardAssignment[] @relation("AssignedToAgent")
+
+  @@index([role])
+  @@index([status])
+  @@map("users")
+}
+
+model AgentProfile {
+  id BigInt @id @default(autoincrement())
+
+  userId BigInt @unique @map("user_id")
+
+  agentCode   String  @unique @map("agent_code")
+  companyName String? @map("company_name")
+  address     String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("agent_profiles")
+}
+
+model Card {
+  id BigInt @id @default(autoincrement())
+
+  cardNumber String @unique @map("card_number")
+  qrToken    String @unique @map("qr_token")
+
+  agentId BigInt? @map("agent_id")
+  ownerId BigInt? @map("owner_id")
+
+  status CardStatus @default(AVAILABLE)
+
+  registeredAt DateTime? @map("registered_at")
+  activatedAt  DateTime? @map("activated_at")
+  expiredAt    DateTime? @map("expired_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  agent User? @relation("AgentCards", fields: [agentId], references: [id])
+  owner User? @relation("OwnerCards", fields: [ownerId], references: [id])
+
+  assignments  CardAssignment[]
+  transactions Transaction[]
+
+  @@index([agentId])
+  @@index([ownerId])
+  @@index([status])
+  @@map("cards")
+}
+
+model CardAssignment {
+  id BigInt @id @default(autoincrement())
+
+  cardId     BigInt @map("card_id")
+  agentId    BigInt @map("agent_id")
+  assignedBy BigInt @map("assigned_by")
+
+  status AssignmentStatus @default(ACTIVE)
+
+  assignedAt   DateTime  @default(now()) @map("assigned_at")
+  unassignedAt DateTime? @map("unassigned_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  card           Card @relation(fields: [cardId], references: [id])
+  agent          User @relation("AssignedToAgent", fields: [agentId], references: [id])
+  assignedByUser User @relation("AssignedByUser", fields: [assignedBy], references: [id])
+
+  @@index([cardId])
+  @@index([agentId])
+  @@index([assignedBy])
+  @@map("card_assignments")
+}
+
+model UserMap {
+  id BigInt @id @default(autoincrement())
+
+  userId BigInt @map("user_id")
+
+  mapName     String    @default("My Map") @map("map_name")
+  description String?
+  status      MapStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  locations UserMapLocation[]
+
+  @@index([userId])
+  @@map("user_maps")
+}
+
+model UserMapLocation {
+  id BigInt @id @default(autoincrement())
+
+  userMapId BigInt @map("user_map_id")
+
+  provider        String?
+  providerPlaceId String? @map("provider_place_id")
+
+  locationName String @map("location_name")
+
+  latitude  Decimal @db.Decimal(10, 7)
+  longitude Decimal @db.Decimal(10, 7)
+
+  address  String?
+  category String?
+  note     String?
+
+  sortOrder Int @default(0) @map("sort_order")
+
+  status LocationStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  userMap UserMap @relation(fields: [userMapId], references: [id], onDelete: Cascade)
+
+  @@index([userMapId])
+  @@index([providerPlaceId])
+  @@map("user_map_locations")
+}
+
+model Price {
+  id BigInt @id @default(autoincrement())
+
+  priceCode String @unique @map("price_code")
+  priceName String @map("price_name")
+
+  amount   Decimal @db.Decimal(15, 2)
+  currency String  @default("IDR")
+
+  taxType  TaxType? @map("tax_type")
+  taxValue Decimal  @default(0) @map("tax_value") @db.Decimal(15, 2)
+
+  serviceFee Decimal @default(0) @map("service_fee") @db.Decimal(15, 2)
+
+  status PriceStatus @default(ACTIVE)
+
+  effectiveFrom  DateTime? @map("effective_from")
+  effectiveUntil DateTime? @map("effective_until")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  transactions Transaction[]
+
+  @@index([status])
+  @@map("prices")
+}
+
+model PaymentMethod {
+  id BigInt @id @default(autoincrement())
+
+  methodCode String @unique @map("method_code")
+  methodName String @map("method_name")
+
+  provider     String?
+  providerCode String? @map("provider_code")
+  methodType   String? @map("method_type")
+
+  feeType  FeeType? @map("fee_type")
+  feeValue Decimal  @default(0) @map("fee_value") @db.Decimal(15, 2)
+
+  minAmount Decimal? @map("min_amount") @db.Decimal(15, 2)
+  maxAmount Decimal? @map("max_amount") @db.Decimal(15, 2)
+
+  status PaymentMethodStatus @default(ACTIVE)
+
+  sortOrder Int @default(0) @map("sort_order")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  payments Payment[]
+
+  @@index([status])
+  @@map("payment_methods")
+}
+
+model Transaction {
+  id BigInt @id @default(autoincrement())
+
+  transactionNumber String @unique @map("transaction_number")
+
+  cardId  BigInt @map("card_id")
+  userId  BigInt @map("user_id")
+  priceId BigInt @map("price_id")
+
+  baseAmount     Decimal @map("base_amount") @db.Decimal(15, 2)
+  taxAmount      Decimal @default(0) @map("tax_amount") @db.Decimal(15, 2)
+  serviceFee     Decimal @default(0) @map("service_fee") @db.Decimal(15, 2)
+  discountAmount Decimal @default(0) @map("discount_amount") @db.Decimal(15, 2)
+  totalAmount    Decimal @map("total_amount") @db.Decimal(15, 2)
+
+  currency String            @default("IDR")
+  status   TransactionStatus @default(PENDING)
+
+  expiredAt DateTime? @map("expired_at")
+  paidAt    DateTime? @map("paid_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  card  Card  @relation(fields: [cardId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+  price Price @relation(fields: [priceId], references: [id])
+
+  payments Payment[]
+
+  @@index([cardId])
+  @@index([userId])
+  @@index([priceId])
+  @@index([status])
+  @@map("transactions")
+}
+
+model Payment {
+  id BigInt @id @default(autoincrement())
+
+  transactionId   BigInt @map("transaction_id")
+  paymentMethodId BigInt @map("payment_method_id")
+
+  paymentProvider       String? @map("payment_provider")
+  providerTransactionId String? @map("provider_transaction_id")
+  providerReference     String? @map("provider_reference")
+
+  amount     Decimal  @db.Decimal(15, 2)
+  paymentFee Decimal  @default(0) @map("payment_fee") @db.Decimal(15, 2)
+  totalPaid  Decimal? @map("total_paid") @db.Decimal(15, 2)
+
+  status PaymentStatus @default(PENDING)
+
+  expiredAt DateTime? @map("expired_at")
+  paidAt    DateTime? @map("paid_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  transaction   Transaction   @relation(fields: [transactionId], references: [id])
+  paymentMethod PaymentMethod @relation(fields: [paymentMethodId], references: [id])
+
+  @@index([transactionId])
+  @@index([paymentMethodId])
+  @@index([status])
+  @@map("payments")
+}
