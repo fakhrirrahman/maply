@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
 import { HTTP_STATUS } from "./http-status";
-import { normalizeError, createErrorResponse } from "./error-response";
+import { normalizeError } from "./error-response";
+import { Response } from "../utils/response";
 
 export const errorHandler = new Elysia({
     name: "error.handler"
@@ -8,21 +9,14 @@ export const errorHandler = new Elysia({
     if (code === "NOT_FOUND") {
         return status(
             HTTP_STATUS.NOT_FOUND,
-            createErrorResponse({
-                message: "Route not found",
-                code: "NOT_FOUND"
-            })
+            Response.error("Route not found")
         );
     }
 
     if (code === "VALIDATION") {
         return status(
             HTTP_STATUS.UNPROCESSABLE_ENTITY,
-            createErrorResponse({
-                message: "Validation error",
-                code: "VALIDATION_ERROR",
-                details: error
-            })
+            Response.validation(error)
         );
     }
 

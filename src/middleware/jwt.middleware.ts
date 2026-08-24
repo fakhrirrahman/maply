@@ -1,5 +1,6 @@
 import { Elysia } from "elysia";
 import { jwtPlugin } from "../lib/jwt";
+import { Response } from "../utils/response";
 
 export const jwtMiddleware = new Elysia({
     name: "jwt.middleware"
@@ -12,8 +13,7 @@ export const jwtMiddleware = new Elysia({
 
             if (!authorization?.startsWith("Bearer ")) {
                 return status(401, {
-                    success: false,
-                    message: "Unauthorized"
+                    ...Response.error("Unauthorized")
                 });
             }
 
@@ -23,8 +23,7 @@ export const jwtMiddleware = new Elysia({
 
             if (!payload) {
                 return status(401, {
-                    success: false,
-                    message: "Invalid or expired token"
+                    ...Response.error("Invalid or expired token")
                 });
             }
 

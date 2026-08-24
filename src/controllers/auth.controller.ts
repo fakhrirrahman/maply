@@ -1,51 +1,17 @@
-import { AppError, HTTP_STATUS } from "../errors";
+import type { LoginBody } from "../models/auth.model";
 import { authService } from "../services/auth.service";
-
-type LoginBody = {
-    userId: string;
-    email?: string;
-    name?: string;
-};
+import { Response } from "../utils/response";
 
 type JwtContext = {
     jwt: {
-        sign: (payload: any) => Promise<string>;
-        verify: (token: string) => Promise<false | any>;
+        sign: (payload: Record<string, string>) => Promise<string>;
     };
 };
 
 export const authController = {
     async login({ jwt, body }: JwtContext & { body: LoginBody }) {
-        const token = await jwt.sign(authService.createTokenPayload(body));
+        const data = await authService.login(body, jwt);
 
-        return {
-            success: true,
-            token
-        };
-    },
-
-    async me({
-        jwt,
-        headers
-    }: JwtContext & { headers: { authorization?: string } }) {
-        const authorization = headers.authorization;
-        const token = authorization?.startsWith("Bearer ")
-            ? authorization.slice("Bearer ".length)
-            : undefined;
-
-        if (!token) {
-            throw new AppError("Missing bearer token", HTTP_STATUS.UNAUTHORIZED);
-        }
-
-        const payload = await jwt.verify(token);
-
-        if (!payload) {
-            throw new AppError("Invalid token", HTTP_STATUS.UNAUTHORIZED);
-        }
-
-        return {
-            success: true,
-            data: payload
-        };
+        return Response.success(data, "Login successful");
     }
 };
